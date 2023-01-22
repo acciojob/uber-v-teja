@@ -56,36 +56,43 @@ public class CustomerServiceImpl implements CustomerService {
 	public TripBooking bookTrip(int customerId, String fromLocation, String toLocation, int distanceInKm) throws Exception{
 		//Book the driver with lowest driverId who is free (cab available variable is Boolean.TRUE). If no driver is available, throw "No cab available!" exception
 		//Avoid using SQL query
-		TripBooking tripBooking = null;
+		TripBooking tripBooking = new TripBooking();
+		Driver driver = null;
 		try{
 			List<Driver> driverList = driverRepository2.findAll();
 			boolean flag = false;
 			int minId = Integer.MAX_VALUE;
-			for(Driver driver : driverList) {
-				if (driver.getDriverId() < minId && driver.getCab().getAvailable()) {
-					minId = driver.getDriverId();
-					flag = true;
+			for(Driver driverTemp : driverList) {
+				if (driverTemp.getDriverId() < minId) {
+					if(driverTemp.getCab().getAvailable()==Boolean.TRUE){
+						minId = driverTemp.getDriverId();
+						driver = driverTemp;
+						flag = true;
+					}
 				}
 			}
 
 			if(flag==false) {
 				throw new Exception("No cab available!");
 			}
-			tripBooking = new TripBooking(fromLocation,toLocation,distanceInKm,TripStatus.CONFIRMED);
-			Driver driver = driverRepository2.findById(minId).get();
-			driver.getCab().setAvailable(false);
-			int bill = (driver.getCab().getPerKmRate()) * distanceInKm;
-			tripBooking.setBill(bill);
 			Customer customer = customerRepository2.findById(customerId).get();
-			if(driver!=null && customer !=null){
-				tripBooking.setDriver(driver);
-				tripBooking.setCustomer(customer);
-			}
+			tripBooking.setCustomer(customer);
+			driver.getCab().setAvailable(Boolean.FALSE);
+			tripBooking.setFromLocation(fromLocation);
+			tripBooking.setToLocation(toLocation);
+			tripBooking.setDistanceInKm(distanceInKm);
+			tripBooking.setStatus(TripStatus.CONFIRMED);
+
+			customer.getTripBookingList().add(tripBooking);
+			customerRepository2.save(customer);
+
+			driver.getTripBookingList().add(tripBooking);
+			driverRepository2.save(driver);
+
 		}catch(Exception e){
 			System.out.println(e);
 		}
 
-		tripBookingRepository2.save(tripBooking);
 		return tripBooking;
 	}
 
@@ -96,6 +103,7 @@ public class CustomerServiceImpl implements CustomerService {
 			TripBooking tripBooking = tripBookingRepository2.findById(tripId).get();
 			tripBooking.setStatus(TripStatus.CANCELED);
 			tripBooking.setBill(0);
+			tripBooking.getDriver().getCab().setAvailable(Boolean.TRUE);
 
 			tripBookingRepository2.save(tripBooking);
 		}catch(Exception e){
@@ -110,6 +118,9 @@ public class CustomerServiceImpl implements CustomerService {
 		try{
 			TripBooking tripBooking = tripBookingRepository2.findById(tripId).get();
 			tripBooking.setStatus(TripStatus.COMPLETED);
+			int bill = tripBooking.getDriver().getCab().getPerKmRate() * tripBooking.getDistanceInKm();
+			tripBooking.setBill(bill);
+			tripBooking.getDriver().getCab().setAvailable(Boolean.TRUE);
 			tripBookingRepository2.save(tripBooking);
 		}catch(Exception e){
 			System.out.println(e);
