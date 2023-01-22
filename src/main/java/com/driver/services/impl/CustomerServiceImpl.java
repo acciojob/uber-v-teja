@@ -60,19 +60,17 @@ public class CustomerServiceImpl implements CustomerService {
 		Driver driver = null;
 		try{
 			List<Driver> driverList = driverRepository2.findAll();
-			boolean flag = false;
-			int minId = Integer.MAX_VALUE;
+			//boolean flag = false;
+			//int minId = Integer.MAX_VALUE;
 			for(Driver driverTemp : driverList) {
-				if (driverTemp.getDriverId() < minId) {
-					if(driverTemp.getCab().getAvailable()==Boolean.TRUE){
-						minId = driverTemp.getDriverId();
+				if(driverTemp.getCab().getAvailable()==Boolean.TRUE){
+					if (driver == null || driverTemp.getDriverId()<driver.getDriverId()) {
 						driver = driverTemp;
-						flag = true;
 					}
 				}
 			}
 
-			if(flag==false) {
+			if(driver==null) {
 				throw new Exception("No cab available!");
 			}
 			Customer customer = customerRepository2.findById(customerId).get();
