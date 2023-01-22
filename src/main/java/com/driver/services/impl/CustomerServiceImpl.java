@@ -57,28 +57,33 @@ public class CustomerServiceImpl implements CustomerService {
 		//Book the driver with lowest driverId who is free (cab available variable is Boolean.TRUE). If no driver is available, throw "No cab available!" exception
 		//Avoid using SQL query
 		TripBooking tripBooking = null;
-		List<Driver> driverList = driverRepository2.findAll();
-		boolean flag = false;
-		int minId = Integer.MAX_VALUE;
-		for(Driver driver : driverList) {
-			if (driver.getDriverId() < minId && driver.getCab().getAvailable()) {
-				minId = driver.getDriverId();
+		try{
+			List<Driver> driverList = driverRepository2.findAll();
+			boolean flag = false;
+			int minId = Integer.MAX_VALUE;
+			for(Driver driver : driverList) {
+				if (driver.getDriverId() < minId && driver.getCab().getAvailable()) {
+					minId = driver.getDriverId();
+					flag = true;
+				}
 			}
+
+			if(flag==false) {
+				throw new Exception("No cab available!");
+			}
+			tripBooking = new TripBooking(fromLocation,toLocation,distanceInKm,TripStatus.CONFIRMED);
+			Driver driver = driverRepository2.findById(minId).get();
+			driver.getCab().setAvailable(false);
+			int bill = (driver.getCab().getPerKmRate()) * distanceInKm;
+			tripBooking.setBill(bill);
+			Customer customer = customerRepository2.findById(customerId).get();
+			if(driver!=null && customer !=null){
+				tripBooking.setDriver(driver);
+				tripBooking.setCustomer(customer);
+			}
+		}catch(Exception e){
+			System.out.println(e);
 		}
-
-		if(minId == Integer.MAX_VALUE) {
-			throw new Exception("No cab available!");
-		}
-		tripBooking = new TripBooking(fromLocation,toLocation,distanceInKm,TripStatus.CONFIRMED);
-
-		Driver driver = driverRepository2.findById(minId).get();
-		driver.getCab().setAvailable(false);
-		int bill = (driver.getCab().getPerKmRate()) * distanceInKm;
-		tripBooking.setBill(bill);
-		Customer customer = customerRepository2.findById(customerId).get();
-
-		tripBooking.setDriver(driver);
-		tripBooking.setCustomer(customer);
 
 		tripBookingRepository2.save(tripBooking);
 		return tripBooking;
