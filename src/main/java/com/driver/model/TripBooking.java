@@ -28,6 +28,13 @@ public class TripBooking {
     @JoinColumn(name = "driver_id")
     private Driver driver;
 
+    public TripBooking(String fromLocation, String toLocation, int distanceInKm, TripStatus confirmed) {
+        this.fromLocation = fromLocation;
+        this.toLocation = toLocation;
+        this.distanceInKm = distanceInKm;
+        this.status = confirmed;
+    }
+
     public Driver getDriver() {
         return driver;
     }
