@@ -14,6 +14,7 @@ import com.driver.repository.DriverRepository;
 import com.driver.repository.TripBookingRepository;
 import com.driver.model.TripStatus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -64,8 +65,7 @@ public class CustomerServiceImpl implements CustomerService {
 				Customer customer = customerRepository2.findById(customerId).get();
 				tripBooking = new TripBooking(fromLocation,toLocation,distanceInKm,TripStatus.CONFIRMED,bill,customer,driver);
 				tripBookingRepository2.save(tripBooking);
-
-				/*
+/*
 				List<TripBooking> tripBookingList = customer.getTripBookingList();
 				//updating list in customer
 				if(tripBookingList==null){
@@ -87,7 +87,7 @@ public class CustomerServiceImpl implements CustomerService {
 				driverRepository2.save(driver);
 
 
-				 */
+ */
 				flag = true;
 				break;
 			}
@@ -95,8 +95,9 @@ public class CustomerServiceImpl implements CustomerService {
 		if(flag == false){
 			throw new Exception("No cab available!");
 		}
+		int size = customerRepository2.findById(customerId).get().getTripBookingList().size();
 
-		return tripBooking;
+		return customerRepository2.findById(customerId).get().getTripBookingList().get(size-1);
 	}
 
 	@Override

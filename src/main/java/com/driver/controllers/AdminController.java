@@ -52,6 +52,11 @@ public class AdminController {
 	@GetMapping("/listOfCustomers")
 	public List<Customer> listOfCustomers() {
 		List<Customer> listOfCustomers = null;
+		try{
+			listOfCustomers = adminService.getListOfCustomers();
+		}catch (Exception e){
+			System.out.println(e);
+		}
 		return listOfCustomers;
 	}
 
