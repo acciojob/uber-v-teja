@@ -1,10 +1,8 @@
 package com.driver.services.impl;
 
 import com.driver.model.TripBooking;
-import com.driver.repository.CabRepository;
 import com.driver.services.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.driver.model.Customer;
@@ -28,8 +26,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Autowired
 	TripBookingRepository tripBookingRepository2;
-	@Autowired
-	private CabRepository cabRepository;
+
 
 	@Override
 	public void register(Customer customer) {
@@ -78,10 +75,22 @@ public class CustomerServiceImpl implements CustomerService {
 			tripBooking.setDriver(driver1);
 			tripBooking.setCustomer(customer);
 
-			driver1.getTripBookingList().add(tripBooking);
-			customer.getTripBookingList().add(tripBooking);
-
+			if(driver1.getTripBookingList()!=null){
+				driver1.getTripBookingList().add(tripBooking);
+			}else{
+				List<TripBooking> temp = new ArrayList<>();
+				temp.add(tripBooking);
+				driver1.setTripBookingList(temp);
+			}
 			driverRepository2.save(driver1);
+
+			if(customer.getTripBookingList()!=null){
+				customer.getTripBookingList().add(tripBooking);
+			}else{
+				List<TripBooking> temp = new ArrayList<>();
+				temp.add(tripBooking);
+				customer.setTripBookingList(temp);
+			}
 			customerRepository2.save(customer);
 
 			return tripBooking;
@@ -92,7 +101,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public void cancelTrip(Integer tripId){
-		//Cancel the trip having given trip Id and update TripBooking attributes accordingly
+		//Cancel the trip having given tripId and update TripBooking attributes accordingly
 		try{
 			TripBooking tripBooking = tripBookingRepository2.findById(tripId).get();
 			tripBooking.setStatus(TripStatus.CANCELED);
@@ -108,7 +117,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public void completeTrip(Integer tripId){
-		//Complete the trip having given trip Id and update TripBooking attributes accordingly
+		//Complete the trip having given tripId and update TripBooking attributes accordingly
 		try{
 			TripBooking tripBooking = tripBookingRepository2.findById(tripId).get();
 			tripBooking.setStatus(TripStatus.COMPLETED);
